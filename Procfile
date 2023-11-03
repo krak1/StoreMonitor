@@ -1,1 +1,1 @@
-web: gunicorn StoreMonitor.wsgi --log—file —
+web: gunicorn StoreMonitor.wsgi --log-file -
