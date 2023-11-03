@@ -15,5 +15,5 @@ class StoreBusinessHours(models.Model):
 
 class StoreActivity(models.Model):
     store_id = models.CharField(max_length=30)
-    timestamp_utc = models.CharField(max_length=32)
+    timestamp_utc = models.DateTimeField()
     status = models.CharField(max_length=8)  # 'active' or 'inactive'
