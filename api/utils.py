@@ -3,6 +3,7 @@ import pytz
 from datetime import datetime
 from django.db.models import Avg, Case, When, Value, IntegerField, DateTimeField
 from django.db.models.functions import TruncHour, Cast
+from django.core.cache import cache
 
 from .models import StoreActivity, StoreBusinessHours, StoreTimezone
 
@@ -34,8 +35,8 @@ def generate_report(report_id):
 
         # Get all store IDs
         store_ids = StoreActivity.objects.values_list('store_id', flat=True).distinct()
+        store_ids_size = len(store_ids)
 
-        print("--> got all store_ids")
         for i, store_id in enumerate(store_ids):
             # Get the store's timezone
             timezone_info = StoreTimezone.objects.filter(store_id=store_id).first()
@@ -52,7 +53,7 @@ def generate_report(report_id):
                                                                              current_time)
             uptime_last_week, downtime_last_week = count_uptime_downtime_hours(uptime_queryset, last_week_start,
                                                                                current_time)
-            print("--uptime, downtime:", uptime_last_week, downtime_last_week)
+
             # Write the data to the CSV
             writer.writerow([
                 store_id,
@@ -63,6 +64,12 @@ def generate_report(report_id):
                 downtime_last_day,
                 downtime_last_week,
             ])
+
+            cache.set("items_done", str(i)+"/"+str(store_ids_size))
+
+            if i == 10:
+                break
+
     print("--> file saved!")
     return report_file_path
 
@@ -118,7 +125,7 @@ def get_active_hours_for_each_timestamp(list_data):
             )
         )
     )
-    print("===>uptime_query_result:", result)
+
     return result
 
 
